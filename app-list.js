@@ -1,88 +1,25 @@
 const app = require('express')();
-const fs = require('fs').promises;
-const cors = require('cors');
 
-const FILE_PATH = './data/list.json';
+const morgan = require('morgan');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const fs = require('fs');
+// création d'un flux d'octets dirigé vers un fichier
+const morganStream = fs.createWriteStream('access.log', { flags: 'a' });
 
 // Middlewares
 
+app.use(morgan('short', { stream: morganStream }));
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Lecture du fichier json pour toutes les routes
-app.use('/list*', (req, res, next) => {
-  fs.readFile(FILE_PATH, 'utf8')
-    .then(data => {
-      // Stockage du fichier dessérialisé dans une variable de req
-      req.list = JSON.parse(data.toString());
-      next();
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ message: err });
-    });
-});
+// Routes
+app.use(require('./routes/list'));
+app.use('/profession', require('./routes/professions'));
 
-// Recherche d'un élément dans la liste
-app.use('/list/:id([0-9]+)*', (req, res, next) => {
-  // Recherche de l'index en fonction de l'id
-  const index = req.list.findIndex(item => item.id == req.params.id);
-  req.itemIndex = index;
-  next();
-});
-
-const changeRoutes = [
-  '^/list/:name$',
-  '^/list/:id([0-9]+)$',
-  '^/list/:id([0-9]+)/:name$',
-];
-// Traitement des données pour ajout, suppression ou modification
-app.use(changeRoutes, (req, res, next) => {
-  tobeSaved = false;
-  if (req.method == 'POST') {
-    const item = { item: req.params.name, id: new Date().getTime() };
-    req.list.push(item);
-    tobeSaved = true;
-  } else if (req.method == 'DELETE') {
-    console.log(req.params);
-    req.list.splice(req.itemIndex, 1);
-    tobeSaved = true;
-  } else if (req.method == 'PUT') {
-    console.log(req.params);
-    req.list[req.itemIndex].item = req.params.name;
-    tobeSaved = true;
-  }
-
-  // Sauvegarde seulement s'il y a lieu
-  if (tobeSaved) {
-    // Ecriture du fichier
-    fs.writeFile(FILE_PATH, JSON.stringify(req.list)).catch(err => {
-      return res.status(500).json({ message: err });
-    });
-  }
-  console.log('prepare to next');
-  // passage de la requête aux routes
-  next();
-});
-
-// routes
-
-app.get('/list', (req, res) => {
-  res.status(200).json(req.list);
-});
-app.get('/list/:id([0-9]+)', (req, res) => {
-  res.status(200).json(req.list[req.itemIndex]);
-});
-
-app.put('/list/:id([0-9]+)/:name', (req, res) => {
-  res.status(200).json(req.list);
-});
-
-app.delete('/list/:id([0-9]+)', (req, res) => {
-  res.status(200).json(req.list);
-});
-
-app.post('/list/:name', (req, res) => {
-  res.status(200).json(req.list);
-});
+// Gestion des erreurs
+app.use(require('./routes/errors'));
 
 app.listen(3000, () => console.log('server started'));
