@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const controller = require('../controllers/api-professions');
+const controller = require('../controllers/api-persons');
 
 router.get('/', controller.getAll);
 router.get('/:id([0-9]+)', controller.getOne);

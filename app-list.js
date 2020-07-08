@@ -18,6 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use(require('./routes/list'));
 app.use('/profession', require('./routes/professions'));
+app.use('/person', require('./routes/persons'));
 
 // Gestion des erreurs
 app.use(require('./routes/errors'));

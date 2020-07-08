@@ -23,6 +23,10 @@ create table persons
         references professions (id)
 );
 
+-- vue pour les personnes
+CREATE OR REPLACE VIEW view_person AS
+SELECT p.*, prof.profession_name FROM persons as p INNER JOIN professions as prof ON p.profession_id= prof.id;
+
 INSERT INTO professions (profession_name)
 VALUES ('Développeur'), ('Photographe'), ('Poète'), ('Peintre');
 

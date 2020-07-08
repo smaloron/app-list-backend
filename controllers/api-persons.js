@@ -1,4 +1,4 @@
-const dao = require('../models/profession-dao');
+const dao = require('../models/person-dao');
 
 exports.getAll = async (req, res) => {
   const rows = await dao.findAll();
@@ -6,7 +6,7 @@ exports.getAll = async (req, res) => {
 };
 
 exports.getOne = async (req, res) => {
-  const rows = await dao.findOneById(req.params.id);
+  const rows = await dao.findOneDetailedById(req.params.id);
   res.status(200).json(rows);
 };
 
@@ -14,16 +14,18 @@ exports.getOne = async (req, res) => {
  * GET /profession/photographe
  */
 exports.getOneByName = async (req, res) => {
-  const rows = await dao.findOneBy('profession_name', req.params.name);
+  const rows = await dao.findOneBy('person_name', req.params.name);
   res.status(200).json(rows);
 };
 
 exports.insertOne = async (req, res) => {
   const data = {
-    profession_name: req.body.profession,
+    person_name: req.body.name,
+    first_name: req.body.firstName,
+    profession_id: req.body.professionId,
   };
   // Tester l'existence de la profession
-  const test = await dao.findOneBy('profession_name', data.profession_name);
+  const test = await dao.findOneBy('person_name', data.person_name);
   if (test && 'id' in test) {
     res.status(200).json({ id: test.id });
   } else {
